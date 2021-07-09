@@ -23,5 +23,5 @@ public interface BeerClient {
 
     Mono<ResponseEntity> deleteBeerById(UUID id);
 
-    Mono<BeerDto> getBeerByUPC(String upc);
+    Mono<BeerDto> getBeerByUPC(String upc, Boolean showInventoryOnhand);
 }
