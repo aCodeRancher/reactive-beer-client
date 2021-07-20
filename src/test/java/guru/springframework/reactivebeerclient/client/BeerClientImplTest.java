@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.Rollback;
+
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
@@ -80,6 +82,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Disabled
     void functionalTestGetBeerById() throws InterruptedException {
         AtomicReference<String> beerName = new AtomicReference<>();
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -136,6 +139,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Rollback
     void createBeer() {
         BeerDto beerDto = BeerDto.builder()
                 .beerName("Dogfishhead 90 Min IPA")
@@ -152,6 +156,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Rollback
     void updateBeer() {
         Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers(null, null, null, null,
                 null);
@@ -200,6 +205,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Rollback
     void deleteBeerById() {
         Mono<BeerPagedList> beerPagedListMono = beerClient.listBeers(null, null, null, null,
                 null);
@@ -213,6 +219,42 @@ class BeerClientImplTest {
     }
 
 
+    @Test
+    void functionalTestGetBeerById1() throws InterruptedException {
+        AtomicReference<String> beerName = new AtomicReference<>();
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+
+        beerClient.listBeers(null, null, null, null,
+                null)
+                .map(beerPagedList -> beerPagedList.getContent())
+                .filter(beerDtos -> beerDtos.stream().anyMatch(beerDto -> beerDto.getBeerName().equalsIgnoreCase("Really Good Beer")))
+                .map(matches -> matches.get(0))
+                .subscribe(beerDto -> {
+                    System.out.println(beerDto.getBeerName());
+                    beerName.set(beerDto.getBeerName());
+                    countDownLatch.countDown();
+                });
+
+        countDownLatch.await();
+
+        assertThat(beerName.get()).isEqualTo("Really Good Beer");
+    }
+
+    @Test
+    void createBeerAfterDelete() {
+        BeerDto beerDto = BeerDto.builder()
+                .beerName("Galaxy Cat")
+                .beerStyle("IPA")
+                .upc("334848549577")
+                .price(new BigDecimal("11.99"))
+                .build();
+
+        Mono<ResponseEntity<Void>> responseEntityMono = beerClient.createBeer(beerDto);
+
+        ResponseEntity responseEntity = responseEntityMono.block();
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+    }
 }
 
 
