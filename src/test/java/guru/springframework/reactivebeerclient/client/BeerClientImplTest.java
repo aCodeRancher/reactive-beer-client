@@ -54,7 +54,7 @@ class BeerClientImplTest {
     void testListBeersByStyle() {
 
         Mono<BeerPagedList> beerPagedListMono =
-                beerClient.listBeers(1, 10, null, "LAGER", null);
+                beerClient.listBeers(0, 10, null, "LAGER", null);
 
         BeerPagedList pagedList = beerPagedListMono.block();
 
