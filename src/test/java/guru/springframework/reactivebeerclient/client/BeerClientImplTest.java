@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BeerClientImplTest {
 
@@ -167,12 +168,7 @@ class BeerClientImplTest {
     @Test
     void deleteBeerByIdNotFound() {
         Mono<ResponseEntity<Void>> responseEntityMono = beerClient.deleteBeerById(UUID.randomUUID());
-
-        assertThrows(WebClientResponseException.class, () -> {
-            ResponseEntity<Void> responseEntity = responseEntityMono.block();
-            assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        });
-
+        assertTrue( responseEntityMono.block().getStatusCode().equals(HttpStatus.NOT_FOUND));
     }
 
     @Test
