@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -72,7 +73,10 @@ public class BeerClientImpl implements BeerClient {
                 .uri(uriBuilder -> uriBuilder.path(WebClientProperties.BEER_V1_PATH_GET_BY_ID)
                 .build(id))
                 .retrieve()
-                .toBodilessEntity();
+                .toBodilessEntity()
+                .onErrorResume(WebClientResponseException.class,
+                        webClientResponseException->
+                                Mono.just(ResponseEntity.status(webClientResponseException.getStatusCode()).build()));
     }
 
     @Override
