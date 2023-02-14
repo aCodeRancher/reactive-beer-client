@@ -241,6 +241,25 @@ class BeerClientImplTest {
     }
 
     @Test
+    void functionTestGetBeerById2() throws InterruptedException {
+        final var beerName = new AtomicReference<String>();
+        final var countDownLatch = new CountDownLatch(1);
+        beerClient.listBeers(null, null, null, null, null)
+                .flatMapIterable(pageList -> pageList.getContent())
+                .map(BeerDto::getId)
+                .take(1)
+                .flatMap(beerId -> beerClient.getBeerById(beerId, false))
+                .subscribe(beerDto -> {
+                    System.out.println(beerDto.getBeerName());
+                    beerName.set(beerDto.getBeerName());
+                    countDownLatch.countDown();
+                });
+
+        countDownLatch.await();
+        assertThat(beerName.get()).isEqualTo("Really Good Beer");
+    }
+
+    @Test
     void createBeerAfterDelete() {
         BeerDto beerDto = BeerDto.builder()
                 .beerName("Galaxy Cat")
